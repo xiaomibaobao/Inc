@@ -1,15 +1,6 @@
 /*
-    ********** In **********
-    Project Home: http://injs.org
-
-    Author: Guokai
-    Gtalk: badkaikai@gmail.com
-    Blog: http://benben.cc
+    ********** Inc **********
     Licence: MIT License
-    Version: 0.2.0-stable
-
-    Philosophy: Just in time.
-    Build: 110428120728
 */
 
 ~function() {
