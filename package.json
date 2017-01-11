@@ -1,0 +1,24 @@
+{
+  "name": "inc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "inc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mt-hfe/Inc.git"
+  },
+  "author": "Guo Kai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mt-hfe/Inc/issues"
+  },
+  "homepage": "https://github.com/mt-hfe/Inc#readme",
+  "devDependencies": {
+    "eslint-config-hfe": "^2.2.3",
+    "webpack": "^1.14.0"
+  }
+}
