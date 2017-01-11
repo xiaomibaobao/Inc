@@ -1,4 +1,4 @@
-import loader from 'lib/loader';
+var loader = require('./lib/loader');
 
 loader.initialize();
 
