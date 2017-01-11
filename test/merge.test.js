@@ -1,8 +1,8 @@
 /* global describe, it */
 
-describe('DecryptTheClientSideToken', function () {
-    describe('#decryptResult()', function () {
-        it('should return correct `decryptedTokenInfo` when the token is exist', function (done) {
+describe('mergeAndDiff', function () {
+    describe('#usingTheMergeMethod()', function () {
+        it('should return', function (done) {
             done();
         });
     });
