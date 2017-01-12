@@ -1,1 +1,1 @@
-window['mod1'] = true;
+window.mod1 = true;
