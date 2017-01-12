@@ -4,19 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Mocha</title>
-    <link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.min.css" rel="stylesheet" />
 </head>
 <body>
     <div id="mocha"></div>
-    <script src="https://cdn.rawgit.com/jquery/jquery/2.1.4/dist/jquery.min.js"></script>
-    <script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
-    <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
-    <script src="https://cdn.rawgit.com/chaijs/chai/master/chai.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js"></script>
     <script>mocha.setup('bdd');</script>
     <script src="../dist/inc.js"></script>
     <script src="browser.inc.test.js"></script>
     <script>
-        mocha.checkLeaks();
+        // mocha.checkLeaks();
         mocha.globals(['jQuery']);
         mocha.run();
     </script>
