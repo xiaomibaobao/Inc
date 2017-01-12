@@ -4,7 +4,7 @@
   "description": "",
   "main": "inc.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node /usr/local/lib/node_modules/istanbul/lib/cli.js cover _mocha ./test/**/v8.*.test.js",
     "build": "webpack --config webpack.config.js"
   },
   "repository": {
@@ -18,7 +18,19 @@
   },
   "homepage": "https://github.com/mt-hfe/Inc#readme",
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint-config-hfe": "^2.2.3",
+    "eslint-plugin-html": "^1.7.0",
+    "karma": "^1.3.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-cli": "^1.0.1",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-opera-launcher": "^1.0.0",
+    "karma-safari-launcher": "^1.0.0",
+    "mocha": "^3.2.0",
     "webpack": "^1.14.0"
   }
 }
