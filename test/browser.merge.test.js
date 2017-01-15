@@ -26,6 +26,17 @@ describe('Merge', function () {
     });
 
     describe('#merge(source, target, oldConetnt, callback)', function () {
+        it('403或者出错', function (done) {
+            merge.merge(source, source, oldConetnt, function (str) {
+                expect(str).to.equal(undefined);
+                done();
+            });
+
+            this.requests[0].respond(403, {
+                'Content-Type': 'text/json' 
+            }, JSON.stringify({}));
+        });
+
         it('没有历史数据&全量', function (done) {
             merge.merge('', target, '', function (str) {
                 expect(str).to.equal(newConetnt);
