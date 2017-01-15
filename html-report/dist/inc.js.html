@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for dist/inc.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">dist/</a> inc.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">57.58% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>38/66</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">42.86% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>39/91</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">70% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>14/20</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">100% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>1/1</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1</td><td class="line-coverage quiet"><span class="cline-any cline-yes">6×</span></td><td class="text"><pre class="prettyprint lang-js">!function(e){function o(t){<span class="missing-if-branch" title="if path not taken" >I</span>if(n[t])<span class="cstat-no" title="statement not covered" >return n[t].exports;v</span>ar a=n[t]={exports:{},id:t,loaded:!1};return e[t].call(a.exports,a,a.exports,o),a.loaded=!0,a.exports}var n={};return o.m=e,o.c=n,o.p="",o(0)}([function(e,o,n){var t=n(1);t.initialize(),window.inc=t},function(module,exports){var headElement=document.head||<span class="branch-1 cbranch-no" title="branch not covered" >document.getElementsByTagName("head")[0],</span>loadQueue={},loaded={},loading={},configure={autoload:!1,core:""},loader={},loadAsserts=function(e,o,n,t){<span class="missing-if-branch" title="if path not taken" >I</span>if(loading[e]){<span class="cstat-no" title="statement not covered" >if(t)<span class="cstat-no" title="statement not covered" >return void setTimeout(<span class="fstat-no" title="function not covered" >function(){<span class="cstat-no" title="statement not covered" ></span>loadAsserts(e,o,n,t)}</span>,1)}</span></span>else if(loaded[e]){<span class="missing-if-branch" title="else path not taken" >E</span>if(t)return void t()}else{loading[e]=!0;var a,r=e.split("?")[0],l=o||r.toLowerCase().substring(r.lastIndexOf(".")+1);<span class="missing-if-branch" title="else path not taken" >E</span>if("js"===l)a=document.createElement("script"),a.type="text/javascript",a.src=e,a.async="true",n&amp;&amp;(a.charset=n);else <span class="cstat-no" title="statement not covered" >if("css"===l)<span class="cstat-no" title="statement not covered" >return a=document.createElement("link"),a.type="text/css",a.rel="stylesheet",a.href=e,loaded[e]=!0,loading[e]=!1,headElement.appendChild(a),void(t&amp;&amp;t());a</span></span>.onload=a.onreadystatechange=function(){this.readyState&amp;&amp;<span class="branch-1 cbranch-no" title="branch not covered" >"loaded"!==this.readyState&amp;</span>&amp;<span class="branch-2 cbranch-no" title="branch not covered" >"complete"!==this.readyState|</span>|(loading[e]=!1,loaded[e]=!0,t&amp;&amp;t(),a.onload=a.onreadystatechange=null)},a.onerror=<span class="fstat-no" title="function not covered" >function(){<span class="cstat-no" title="statement not covered" ></span>loading[e]=!1,t&amp;&amp;t(),a.onerror=null}</span>,headElement.appendChild(a)}},dependencyAnalyze=<span class="fstat-no" title="function not covered" >function(e){<span class="cstat-no" title="statement not covered" ></span>for(var o=[],n=e.length-1;n&gt;=0;n--){<span class="cstat-no" title="statement not covered" >var t=e[n];<span class="cstat-no" title="statement not covered" >i</span>f("string"==typeof t){<span class="cstat-no" title="statement not covered" >if(!loadQueue[t]){<span class="cstat-no" title="statement not covered" >"undefined"!=typeof console&amp;&amp;console.warn&amp;&amp;console.warn("In Error :: Module not found: "+t);<span class="cstat-no" title="statement not covered" >c</span>ontinue}<span class="cstat-no" title="statement not covered" ></span>o</span>.push(t);<span class="cstat-no" title="statement not covered" >v</span>ar a=loadQueue[t].rely;<span class="cstat-no" title="statement not covered" >a</span>&amp;&amp;(o=o.concat(dependencyAnalyze(a)))}</span>else<span class="cstat-no" title="statement not covered" >"function"==typeof t&amp;&amp;o.push(t)}<span class="cstat-no" title="statement not covered" ></span></span>r</span>eturn o}</span>,loadParallel=function(e,o){var n=e.length,t=function(){!--n&amp;&amp;o&amp;&amp;o()};<span class="missing-if-branch" title="if path not taken" >I</span>if(0==n)<span class="cstat-no" title="statement not covered" >return void(o&amp;&amp;o());f</span>or(var a=0;a&lt;e.length;a++){var r=loadQueue[e[a]];"function"!=typeof e[a]?"undefined"!=typeof r?r.rely&amp;&amp;0!=r.rely.length?loadParallel(r.rely,function(e){return function(){loadAsserts(e.path,e.type,e.charset,t)}}(r)):loadAsserts(r.path,r.type,r.charset,t):(console&amp;&amp;console.warn&amp;&amp;console.warn("In Error :: Module not found: "+e[a]),t()):(<span class="branch-1 cbranch-no" title="branch not covered" >e[a](),t())</span>}},add=function(e,o){e&amp;&amp;o&amp;&amp;("string"==typeof o&amp;&amp;(o={path:o}),loadQueue[e]=o)},adds=<span class="fstat-no" title="function not covered" >function(e){<span class="cstat-no" title="statement not covered" ></span>if(e.modules)<span class="cstat-no" title="statement not covered" >for(var o in e.modules)<span class="cstat-no" title="statement not covered" >if(e.modules.hasOwnProperty(o)){<span class="cstat-no" title="statement not covered" >var n=e.modules[o];<span class="cstat-no" title="statement not covered" >i</span>f(!e.modules.hasOwnProperty(o))<span class="cstat-no" title="statement not covered" >continue;<span class="cstat-no" title="statement not covered" >e</span></span>.type&amp;&amp;!n.type&amp;&amp;(n.type=e.type),e.charset&amp;&amp;!n.charset&amp;&amp;(n.charset=e.charset),add.call(this,o,n)}</span>}</span></span></span>,config=<span class="fstat-no" title="function not covered" >function(e,o){<span class="cstat-no" title="statement not covered" ></span>return 0===arguments.length?configure:1===arguments.length?configure[e]:void(configure[e]=o)}</span>,use=function(){var e=[].slice.call(arguments);<span class="missing-if-branch" title="else path not taken" >E</span>if("function"==typeof e[e.length-1])var o=e.pop();configure.core&amp;&amp;<span class="branch-1 cbranch-no" title="branch not covered" >!loaded[configure.core]?<span class="branch-0 cbranch-no" title="branch not covered" ></span>loadParallel(["__core"],<span class="fstat-no" title="function not covered" >function(){<span class="cstat-no" title="statement not covered" ></span>loadParallel(e,o)}</span>):</span>loadParallel(e,o)},initialize=function(){var myself=function(){var e=document.getElementsByTagName("script");return e[e.length-1]}(),autoload=myself.getAttribute("autoload"),core=myself.getAttribute("core");core&amp;&amp;(<span class="branch-1 cbranch-no" title="branch not covered" >configure.autoload=eval(autoload),configure.core=core,add("__core",{path:configure.core}))</span>,configure.autoload&amp;&amp;<span class="branch-1 cbranch-no" title="branch not covered" >configure.core&amp;</span>&amp;<span class="branch-2 cbranch-no" title="branch not covered" >loader.use()}</span>;loader.add=add,loader.adds=adds,loader.use=use,loader.config=config,loader.initialize=initialize,module.exports=loader}]);</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Jan 12 2017 15:49:45 GMT+0800 (CST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
