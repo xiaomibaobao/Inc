@@ -11,6 +11,9 @@ var oldConetnt = "define('init',['util','p1'],function(){console.log('dafds init
 var newConetnt = "sdf define('init',['util','p1'],function(){console.log(' int depnd on util sdfs p1 ok 49!'),document.write('init depend on 34 util p2 ok!</br>')}),define('util',[],function(){console.log('util ok!'),document.write('il ok!</br>')});csadf";
 var incData = ["sdf ", [1, 52], [57, 3], [5, 5], [63, 7], "t", [12, 2], " sdfs", [65, 6], " 49", [18, 34], " 34", [99, 65], "il", [83, 23], [124, 16], "c", [99, 3], [129, 1]];
 
+
+merge.setUrl('localhost');
+
 describe('Merge', function () {
     beforeEach(function() {
         this.xhr = sinon.useFakeXMLHttpRequest();
@@ -45,10 +48,7 @@ describe('Merge', function () {
 
             this.requests[0].respond(200, {
                 'Content-Type': 'text/json' 
-            }, JSON.stringify({
-                code: 2,
-                data: newConetnt
-            }));
+            }, newConetnt);
         });
 
         it('增量', function (done) {
@@ -61,7 +61,7 @@ describe('Merge', function () {
                 'Content-Type': 'text/json' 
             }, JSON.stringify({
                 code: 1,
-                data: incData
+                data: JSON.stringify(incData)
             }));
         });
 

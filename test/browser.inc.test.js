@@ -5,6 +5,45 @@ var assert = chai.assert;
 var expect = chai.expect;
 
 describe('In', function () {
+    before(function () {
+        inc.config('isStore', true);
+        inc.config('serverUrl', 'https://f32.r.fe.dev.sankuai.com/');
+    });
+
+    after(function () {
+        // runs after all tests in this block
+        var coverage = window.__coverage__;
+
+        if (coverage) {
+            console.log(JSON.stringify(coverage));
+        } else {
+            console.log('No coverage data generated');
+        }
+    });
+
+    beforeEach(function() {
+        this.xhr = sinon.useFakeXMLHttpRequest();
+
+        this.requests = [];
+        this.xhr.onCreate = function(xhr) {
+            this.requests.push(xhr);
+        }.bind(this);
+    });
+
+
+    afterEach(function() {
+        this.xhr.restore();
+
+        // clear
+        window.mod1 = undefined;
+        window.mod2 = undefined;
+        window.mod3 = undefined;
+        window.mod4 = undefined;
+        window.mod5 = undefined;
+
+        window.localStorage.clear();
+    });
+
     describe('#add(name, path)', function () {
         it('should added special module successful', function (done) {
             inc.add('mod1', './modules/mod1.js');
@@ -41,8 +80,7 @@ describe('In', function () {
         it('should added special module failed', function (done) {
             inc.add('mod5');
             inc.use('mod5', function () {
-                expect(window.mod3).to.equal(true);
-                expect(window.mod4).to.equal(true);
+                expect(window.mod5).to.equal(undefined);
                 done();
             });
         });
@@ -50,22 +88,66 @@ describe('In', function () {
 
     describe('#adds()', function () {
         it('should added special module successful', function (done) {
-            inc.add('mod1', './modules/mod1.js');
-            inc.use('mod1', function () {
-                expect(window.mod1 === true);
+            inc.adds({
+                modules: {
+                    'mod5': './modules/mod5.js',
+                    'mod6': { path: './modules/mod6.js', type: 'js', charset: 'utf-8', rely: ['mod5'] }
+                }
+            });
+            inc.use('mod6', function () {
+                expect(window.mod5).to.equal(true);
+                expect(window.mod6).to.equal(true);
                 done();
             });
         });
-    });
 
-    after(function () {
-        // runs after all tests in this block
-        var coverage = window.__coverage__;
+        it('should proxy special module successful', function (done) {
+            inc.adds({
+                modules: {
+                    'mod7': { path: 'http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js', version: '1.0', type: 'js', charset: 'utf-8' }
+                }
+            });
+            inc.use('mod7', function () {
+                expect(window.mod7).to.equal(true);
+                done();
+            });
 
-        if (coverage) {
-            console.log(JSON.stringify(coverage));
-        } else {
-            console.log('No coverage data generated');
-        }
+            this.requests[0].respond(200, {
+                'Content-Type': 'text/json' 
+            }, 'window.mod7 = true;');
+        });
+
+        it('should store special module successful', function (done) {
+            window.localStorage.setItem('mod7', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
+            inc.adds({
+                modules: {
+                    'mod7': { path: 'http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js', version: '1.0', type: 'js', charset: 'utf-8' }
+                }
+            });
+            inc.use('mod7', function () {
+                expect(window.mod7).to.equal(true);
+                done();
+            });
+        });
+
+        it('should increment special module successful', function (done) {
+            window.localStorage.setItem('mod8', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
+            inc.adds({
+                modules: {
+                    'mod8': { path: 'http://awp-assets.meituan.net/hfe/fep/664dc864ececfda55dbda00c59ca0722.js', version: '2.0', type: 'js', charset: 'utf-8' }
+                }
+            });
+            inc.use('mod8', function () {
+                expect(window.mod8).to.equal(true);
+                done();
+            });
+
+            this.requests[0].respond(200, {
+                'Content-Type': 'text/json' 
+            }, JSON.stringify({
+                code: 1,
+                data: JSON.stringify([[1,10], '8',[11,8]])
+            }));
+        });
     });
 });
