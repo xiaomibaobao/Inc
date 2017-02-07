@@ -6,6 +6,7 @@ var expect = chai.expect;
 
 describe('In', function () {
     before(function () {
+        inc.config('bizname', 'test');
         inc.config('isStore', true);
         inc.config('serverUrl', 'https://f32.r.fe.dev.sankuai.com/');
     });
@@ -113,12 +114,12 @@ describe('In', function () {
             });
 
             this.requests[0].respond(200, {
-                'Content-Type': 'text/json' 
+                'Content-Type': 'application/javascript' 
             }, 'window.mod7 = true;');
         });
 
         it('should store special module successful', function (done) {
-            window.localStorage.setItem('mod7', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
+            window.localStorage.setItem('test:mod7', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
             inc.adds({
                 modules: {
                     'mod7': { path: 'http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js', version: '1.0', type: 'js', charset: 'utf-8' }
@@ -131,7 +132,7 @@ describe('In', function () {
         });
 
         it('should increment special module successful', function (done) {
-            window.localStorage.setItem('mod8', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
+            window.localStorage.setItem('testmod8', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
             inc.adds({
                 modules: {
                     'mod8': { path: 'http://awp-assets.meituan.net/hfe/fep/664dc864ececfda55dbda00c59ca0722.js', version: '2.0', type: 'js', charset: 'utf-8' }
