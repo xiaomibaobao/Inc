@@ -132,7 +132,7 @@ describe('In', function () {
         });
 
         it('should increment special module successful', function (done) {
-            window.localStorage.setItem('testmod8', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
+            window.localStorage.setItem('test:mod8', '{"u":"http://awp-assets.meituan.net/hfe/fep/4b09cc8ed81fac37b0eaa7f00b6effca.js","v":"1.0","c":"window.mod7 = true;"}');
             inc.adds({
                 modules: {
                     'mod8': { path: 'http://awp-assets.meituan.net/hfe/fep/664dc864ececfda55dbda00c59ca0722.js', version: '2.0', type: 'js', charset: 'utf-8' }
