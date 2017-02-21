@@ -9,6 +9,7 @@ describe('In', function () {
         inc.config('bizname', 'test');
         inc.config('isStore', true);
         inc.config('serverUrl', 'https://f32.r.fe.dev.sankuai.com/');
+        inc.config('cdnUrl', 'http://awp-assets.sankuai.com/inc/');
     });
 
     after(function () {
