@@ -37,6 +37,7 @@ describe('In', function () {
         this.xhr.restore();
 
         // clear
+        window.mod11 = undefined;
         window.mod1 = undefined;
         window.mod2 = undefined;
         window.mod3 = undefined;
@@ -48,11 +49,25 @@ describe('In', function () {
 
     describe('#add(name, path)', function () {
         it('should added special module successful', function (done) {
+            inc.add('mod1.1', './modules/mod1.1.js');
+            inc.use('mod1.1', function () {
+                expect(window.mod11).to.equal(true);
+                done();
+            });
+
+            this.requests[0].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod11 = true;');
+        });
+
+        it('should added special module error', function (done) {
             inc.add('mod1', './modules/mod1.js');
             inc.use('mod1', function () {
                 expect(window.mod1).to.equal(true);
                 done();
             });
+
+            this.requests[0].respond(404, {}, '');
         });
     });
 
@@ -63,6 +78,10 @@ describe('In', function () {
                 expect(window.mod2).to.equal(true);
                 done();
             });
+
+            this.requests[0].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod2 = true;');
         });
     });
 
@@ -75,6 +94,14 @@ describe('In', function () {
                 expect(window.mod4).to.equal(true);
                 done();
             });
+
+            this.requests[0].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod3 = true;');
+
+            this.requests[1].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod4 = true;');
         });
     });
 
@@ -82,6 +109,7 @@ describe('In', function () {
         it('should added special module failed', function (done) {
             inc.add('mod5');
             inc.use('mod5', function () {
+                console.log(window.mod5);
                 expect(window.mod5).to.equal(undefined);
                 done();
             });
@@ -101,6 +129,14 @@ describe('In', function () {
                 expect(window.mod6).to.equal(true);
                 done();
             });
+
+            this.requests[0].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod5 = true;');
+
+            this.requests[1].respond(200, {
+                'Content-Type': 'application/javascript' 
+            }, 'window.mod6 = true;');
         });
 
         it('should proxy special module successful', function (done) {
@@ -146,10 +182,7 @@ describe('In', function () {
 
             this.requests[0].respond(200, {
                 'Content-Type': 'text/json' 
-            }, JSON.stringify({
-                code: 1,
-                data: JSON.stringify([[1,10], '8',[11,8]])
-            }));
+            }, JSON.stringify([[1,10], '8',[11,8]]) + '1');
         });
     });
 });
