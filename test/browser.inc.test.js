@@ -30,6 +30,8 @@ describe('In', function () {
         this.xhr.onCreate = function(xhr) {
             this.requests.push(xhr);
         }.bind(this);
+
+        inc.config('isStore', true);
     });
 
 
@@ -73,15 +75,12 @@ describe('In', function () {
 
     describe('#add(name, object) - without dependency', function () {
         it('should added special module successful', function (done) {
+            inc.config('isStore', false);
             inc.add('mod2', { path: './modules/mod2.js', type: 'js', charset: 'utf-8' });
             inc.use('mod2', function () {
                 expect(window.mod2).to.equal(true);
                 done();
             });
-
-            this.requests[0].respond(200, {
-                'Content-Type': 'application/javascript' 
-            }, 'window.mod2 = true;');
         });
     });
 
