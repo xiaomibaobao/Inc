@@ -1,1 +1,1 @@
-window.inc = require('./lib/loader');
+window.inc = require('./lib/index');
