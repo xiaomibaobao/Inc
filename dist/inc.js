@@ -64,9 +64,9 @@
 
 	var _config2 = _interopRequireDefault(_config);
 
-	var _store = __webpack_require__(4);
+	var _loader = __webpack_require__(4);
 
-	var _store2 = _interopRequireDefault(_store);
+	var _loader2 = _interopRequireDefault(_loader);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -85,7 +85,6 @@
 	    function Inc() {
 	        _classCallCheck(this, Inc);
 
-	        this.activated = true; // 是否开启前端离线化
 	        this.queue = {}; // 待执行模块
 
 	        var scripts = makeArray(document.getElementsByTagName('script'));
@@ -155,82 +154,6 @@
 	    };
 
 	    /**
-	     * 加载模块内容
-	     * @param {String} name
-	     * @param {Function} callback
-	     */
-
-
-	    Inc.prototype._runLoaded = function _runLoaded(name, callback) {
-	        var module = this.queue[name];
-	        if (module.content) {
-	            // 模块内容存在则直接执行 callback
-	            callback(module);
-	            return;
-	        }
-
-	        var store = new _store2.default(this.config, this.hook);
-	        if (!store.isSupported()) {
-	            // 存储不可用则直接执行 callback
-	            callback(module);
-	            return;
-	        }
-
-	        var data = store.getItem(module.name);
-	        var url = data.u,
-	            version = data.v,
-	            content = data.c;
-
-	        console.log(url, version, content);
-	        if (version === module.version) {
-	            console.log(version);
-	        }
-	    };
-
-	    /**
-	     * 执行加载队列
-	     * @param {Array} args
-	     * @param {Function} callback
-	     */
-
-
-	    Inc.prototype._runQueue = function _runQueue(args, callback) {
-	        var _this = this;
-
-	        if (!this.activated) {
-	            // 不使用前端离线化则直接执行 callback
-	            callback();
-	            return;
-	        }
-
-	        var modules = [];
-
-	        // 遍历树
-	        var tree = function tree(names) {
-	            for (var i = 0; i < names.length; i++) {
-	                var name = names[i];
-	                var module = _this.queue[name];
-	                if (module) {
-	                    modules.push(name);
-	                    if (module.rely && module.rely.length > 0) {
-	                        tree(module.rely);
-	                    }
-	                }
-	            }
-	        };
-
-	        tree(args);
-
-	        for (var i = 0; i < modules.length; i++) {
-	            this._runLoaded(modules[i], function () {
-	                console.log(12);
-	            });
-	        }
-	        console.log(modules);
-	        console.log(callback);
-	    };
-
-	    /**
 	     * 加载待执行模块
 	     * @param {String} name
 	     * @param {Object} config
@@ -267,6 +190,8 @@
 
 
 	    Inc.prototype.use = function use() {
+	        var _this = this;
+
 	        var callback = function callback() {
 	            return;
 	        };
@@ -276,7 +201,21 @@
 	            callback = args.pop();
 	        }
 
-	        this._runQueue(args, callback);
+	        var index = args.length; // 执行索引
+	        if (index === 0) {
+	            // 直接 callback
+	            callback();
+	            return;
+	        }
+
+	        args.forEach(function (main) {
+	            new _loader2.default(_this.config, _this.hook, _this.queue, main).execute(function () {
+	                index--;
+	                if (index === 0) {
+	                    callback();
+	                }
+	            });
+	        });
 	    };
 
 	    return Inc;
@@ -392,6 +331,170 @@
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	exports.__esModule = true;
+
+	var _store = __webpack_require__(5);
+
+	var _store2 = _interopRequireDefault(_store);
+
+	var _merge = __webpack_require__(6);
+
+	var _merge2 = _interopRequireDefault(_merge);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Loader = function () {
+	    function Loader(config, hook, queue, main) {
+	        _classCallCheck(this, Loader);
+
+	        this.config = config;
+	        this.hook = hook;
+
+	        this.activated = true; // 是否开启前端离线化
+	        this.queue = queue; // 队列
+	        this.main = main; // 执行主函数
+	    }
+
+	    /**
+	     * 加载模块内容
+	     * @param {String} name
+	     * @param {Function} callback
+	     */
+
+
+	    Loader.prototype._runLoaded = function _runLoaded(name, callback) {
+	        var module = this.queue[name];
+	        if (module.content) {
+	            // 模块内容存在则直接执行 callback
+	            callback(module);
+	            return;
+	        }
+
+	        var store = new _store2.default(this.config, this.hook);
+	        var merge = new _merge2.default(this.config, this.hook);
+
+	        if (!store.isSupported()) {
+	            // 存储不可用则直接执行 callback
+	            callback(module);
+	            return;
+	        }
+
+	        var data = store.getItem(module.name) || {};
+	        var url = data.u,
+	            version = data.v,
+	            content = data.c;
+
+	        if (version === module.version) {
+	            // 版本相同直接取本地存储
+	            module.content = content;
+	            callback(module);
+	            return;
+	        }
+
+	        // 更新 module 内容
+	        var updateModule = function updateModule(text) {
+	            if (text) {
+	                module.content = text;
+	                // 异步更新内容
+	                setTimeout(function () {
+	                    store.setItem({
+	                        u: module.path,
+	                        v: module.version,
+	                        c: module.content
+	                    });
+	                }, 0);
+	            }
+	            callback(module);
+	        };
+
+	        if (url && url !== module.path) {
+	            // url 存在并且 url 发生变化
+	            merge.getMergeContent(url, module.path, content, updateModule);
+	            return;
+	        }
+
+	        merge.getFileContent(module.path, updateModule);
+	        return;
+	    };
+
+	    /**
+	     * 执行加载队列
+	     * @param {Function} callback
+	     */
+
+
+	    Loader.prototype._runQueue = function _runQueue(callback) {
+	        var _this = this;
+
+	        if (!this.activated) {
+	            // 不使用前端离线化则直接执行 callback
+	            callback();
+	            return;
+	        }
+
+	        var modules = [];
+
+	        // 遍历树
+	        var tree = function tree(name) {
+	            var module = _this.queue[name];
+	            if (module) {
+	                if (module.rely && module.rely.length > 0) {
+	                    for (var i = 0; i < module.rely.length; i++) {
+	                        tree(module.rely[i]);
+	                    }
+	                }
+	            }
+	            modules.push(name);
+	        };
+
+	        tree(this.main);
+
+	        var index = modules.length; // 执行索引
+	        if (index === 0) {
+	            // 直接 callback
+	            callback();
+	            return;
+	        }
+
+	        modules.forEach(function (module) {
+	            _this._runLoaded(module, function () {
+	                index--;
+	                if (index === 0) {
+	                    callback();
+	                }
+	            });
+	        });
+	        return;
+	    };
+
+	    /**
+	     * 执行
+	     * @param {Function} callback
+	     */
+
+
+	    Loader.prototype.execute = function execute(callback) {
+	        var _this2 = this;
+
+	        this._runQueue(function () {
+	            console.log(_this2.queue);
+	            callback();
+	        });
+	    };
+
+	    return Loader;
+	}();
+
+	exports.default = Loader;
+
+/***/ },
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -465,7 +568,7 @@
 	    /**
 	     * 保存 Localstorage 项
 	     * @param {string} key
-	     * @param {Object} { 'u': url地址, 'v': 版本号, 'c': 实际内容, 't': 时间戳, 's': 内容大小 }
+	     * @param {Object} { 'u': url地址, 'v': 版本号, 'c': 实际内容 }
 	     * @return {Boolean}
 	     */
 	    ;
@@ -489,6 +592,193 @@
 	}();
 
 	exports.default = Store;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	exports.__esModule = true;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Merge = function () {
+	    function Merge(config, hook) {
+	        _classCallCheck(this, Merge);
+
+	        this.hook = hook;
+	        this.prefixServerUrl = config.get('prefixServerUrl'); // diff 服务地址
+	        this.prefixDiffFileUrl = config.get('prefixDiffFileUrl'); // diff 文件地址前缀
+	    }
+
+	    /**
+	     * xhr
+	     * @param {String} url
+	     * @param {Function} callback
+	     */
+
+
+	    Merge.prototype._xhr = function _xhr(url, callback) {
+	        // const req = window.ActiveXObject ? new window.ActiveXObject('Microsoft.XMLHTTP'): new window.XMLHttpRequest()
+	        var req = new window.XMLHttpRequest();
+	        req.open('GET', url, true);
+	        req.onreadystatechange = function () {
+	            if (req.readyState === 4) {
+	                if (req.status === 200) {
+	                    callback(req.responseText);
+	                } else {
+	                    callback();
+	                }
+	            }
+	        };
+	        return req.send(null);
+	    };
+
+	    /**
+	     * 合并算法
+	     * @param {String} oldContent
+	     * @param {String} diffData
+	     * @return {String} 合并后的内容
+	     */
+
+
+	    Merge.prototype._merge = function _merge(oldContent, diffData) {
+	        var begin = new Date().getTime();
+	        var reContent = '';
+	        var lastArray = null;
+	        for (var i = 0; i < diffData.length; i++) {
+	            var jObj = diffData[i];
+	            if ((typeof jObj === 'undefined' ? 'undefined' : _typeof(jObj)) === 'object') {
+	                var start = jObj[0] - 1;
+	                var len = jObj[1];
+	                if (lastArray) {
+	                    start = start + lastArray[0];
+	                }
+	                lastArray = jObj;
+	                reContent += oldContent.substring(start, start + len);
+	            } else {
+	                reContent += jObj;
+	            }
+	        }
+	        this.hook.push('mergeTime', new Date().getTime() - begin);
+	        return reContent;
+	    };
+
+	    /**
+	     * 拉去增量内容
+	     * @param {String} oldUrl
+	     * @param {String} newUrl
+	     * @param {Function} callback ({
+	     *            code: 1, // 0 失败 1 增量 2 全量 3 没有变化
+	     *            data: {}
+	     *        })
+	     */
+
+
+	    Merge.prototype._fetchDiffData = function _fetchDiffData(oldUrl, newUrl, callback) {
+	        var _this = this;
+
+	        var begin = new Date().getTime();
+	        var oldPath = oldUrl.replace(/(http:|https:)/, '');
+	        var newPath = newUrl.replace(/(http:|https:)/, '');
+	        this._xhr(this.prefixDiffFileUrl + newPath.replace(/\//g, '') + oldPath.replace(/\//g, ''), function (responseText) {
+	            if (responseText && responseText !== '') {
+	                var code = responseText[responseText.length - 1];
+	                if (Number(code) === 1 || Number(code) === 2) {
+	                    callback({
+	                        code: Number(code),
+	                        data: responseText.substr(0, responseText.length - 1)
+	                    });
+	                } else {
+	                    callback({
+	                        code: Number(code)
+	                    });
+	                }
+	                _this.hook.push('mergeFetchDiffDataSize', responseText.length);
+	            } else {
+	                callback({ code: 0 });
+	                _this.hook.push('mergeFetchDiffDataFailCount');
+	                // 通知服务器生成增量文件
+	                _this._xhr(_this.prefixDiffFileUrl + '?target=' + newPath + '&source=' + oldPath, function () {
+	                    return true;
+	                });
+	            }
+	            _this.hook.push('mergeFetchFileContentTime', new Date().getTime() - begin);
+	        });
+	    };
+
+	    /**
+	     * 获取全量数据内容
+	     * @param {String} url
+	     * @param {Function} callback (content:String)
+	     */
+
+
+	    Merge.prototype.getFileContent = function getFileContent(url, callback) {
+	        var _this2 = this;
+
+	        try {
+	            var begin = new Date().getTime();
+	            this._xhr(url, function (responseText) {
+	                callback(responseText);
+	                _this2.hook.push('mergeFetchFileContentTime', new Date().getTime() - begin);
+	                if (responseText && responseText !== '') {
+	                    _this2.hook.push('mergeFetchFileContentSize', responseText.length);
+	                }
+	            });
+	        } catch (e) {
+	            callback();
+	        }
+	    };
+
+	    /**
+	     * 拉去增量内容
+	     * @param {String} oldUrl
+	     * @param {String} newUrl
+	     * @param {String} oldContent
+	     * @param {Function} callback (content:String)
+	     */
+
+
+	    Merge.prototype.getMergeContent = function getMergeContent(oldUrl, newUrl, oldContent, callback) {
+	        var _this3 = this;
+
+	        if (!this.prefixServerUrl || this.prefixServerUrl === '') {
+	            if (console && console.error) {
+	                console.error('In Error :: prefixServerUrl url not set');
+	            }
+	        }
+
+	        if (!this.prefixDiffFileUrl || this.prefixDiffFileUrl === '') {
+	            if (console && console.error) {
+	                console.error('In Error :: prefixDiffFileUrl url not set');
+	            }
+	        }
+
+	        try {
+	            this._fetchDiffData(oldUrl, newUrl, function (payload) {
+	                if (payload.code === 1) {
+	                    callback(_this3._merge(oldContent, JSON.parse(payload.data)));
+	                } else if (payload.code === 2) {
+	                    callback(payload.data);
+	                } else if (payload.code === 3) {
+	                    callback(oldContent);
+	                } else {
+	                    callback();
+	                }
+	            });
+	        } catch (e) {
+	            callback();
+	        }
+	    };
+
+	    return Merge;
+	}();
+
+	exports.default = Merge;
 
 /***/ }
 /******/ ]);
