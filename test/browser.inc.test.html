@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Mocha</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css" rel="stylesheet" />
 </head>
 <body>
     <div id="mocha"></div>
@@ -13,9 +13,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.min.js"></script>
     <script>mocha.setup('bdd');</script>
-    <script src="../dist/inc.istanbul.js"></script>
-    <script src="browser.inc.test.js"></script>
-    <script src="browser.merge.test.js"></script>
+    <script>var abc = function () { console.log('abc') }</script>
+    <script inc-name="mod1" inc-path="./modules/mod1.js"></script>
+    <script inc-name="mod2" inc-path="./modules/mod2.js"></script>
+    <script inc-name="mod3" inc-path="./modules/mod3.js" inc-rely="mod1,mod2"></script>
+    <script src="../dist/inc.js" 
+        autoload="true"
+        core="mod3"
+        callback="abc()"
+        config='{
+            "bizname": "test", 
+            "storeMaxSize": 3145728, 
+            "prefixServerUrl": "https://f32.r.fe.dev.sankuai.com/",
+            "prefixDiffFileUrl": "http://awp-assets.sankuai.com/inc/"
+        }'></script>
     <script>
         // mocha.checkLeaks();
         mocha.globals(['jQuery']);
