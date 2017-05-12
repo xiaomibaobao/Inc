@@ -46,7 +46,13 @@
 
 	'use strict';
 
-	window.inc = __webpack_require__(1);
+	var _index = __webpack_require__(1);
+
+	var _index2 = _interopRequireDefault(_index);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	window.Inc = window.inc = new _index2.default();
 
 /***/ },
 /* 1 */
@@ -144,7 +150,8 @@
 	                });
 	            }
 	        }
-	        if (autoload && core) {
+
+	        if (autoload && (autoload === 'true' || autoload === 'yes')) {
 	            this.use(core, function () {
 	                if (callback) {
 	                    window.eval.call(window, callback);
@@ -164,7 +171,9 @@
 	        if (!name || !config) {
 	            return;
 	        }
-	        this.queue[name] = typeof conf === 'string' ? { path: config } : config;
+	        var module = typeof config === 'string' ? { path: config } : config;
+	        module.name = name;
+	        this.queue[name] = module;
 	    };
 
 	    /**
@@ -178,7 +187,9 @@
 	        for (var module in config.modules) {
 	            if (config.modules.hasOwnProperty(module)) {
 	                var module_config = config.modules[module];
-	                if (!config.modules.hasOwnProperty(module)) continue;
+	                if (config.type && !module_config.type) {
+	                    module_config.type = config.type;
+	                }
 	                this.add(module, module_config);
 	            }
 	        }
@@ -208,12 +219,19 @@
 	            return;
 	        }
 
+	        var hook = function hook() {
+	            index--;
+	            if (index === 0) {
+	                callback();
+	                setTimeout(function () {
+	                    _this.hook.doStatistics();
+	                }, 0);
+	            }
+	        };
+
 	        args.forEach(function (main) {
 	            new _loader2.default(_this.config, _this.hook, _this.queue, main).execute(function () {
-	                index--;
-	                if (index === 0) {
-	                    callback();
-	                }
+	                hook();
 	            });
 	        });
 	    };
@@ -221,7 +239,7 @@
 	    return Inc;
 	}();
 
-	exports.default = new Inc();
+	exports.default = Inc;
 
 /***/ },
 /* 2 */
@@ -268,7 +286,16 @@
 
 
 	    Hook.prototype.doStatistics = function doStatistics() {
-	        // TODO
+	        var _this = this;
+
+	        if (window.mta) {
+	            this.tasks.forEach(function (task) {
+	                var st = _this.statistics[task[0]];
+	                if (st) {
+	                    window.mta(st.type, st.name, task[0]);
+	                }
+	            });
+	        }
 	    };
 
 	    return Hook;
@@ -347,7 +374,8 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /*eslint no-eval: 0, no-useless-call: 0*/
+
 
 	var Loader = function () {
 	    function Loader(config, hook, queue, main) {
@@ -356,7 +384,9 @@
 	        this.config = config;
 	        this.hook = hook;
 
+	        this.head = document.head || document.getElementsByTagName('head')[0]; // head el
 	        this.activated = true; // 是否开启前端离线化
+
 	        this.queue = queue; // 队列
 	        this.main = main; // 执行主函数
 	    }
@@ -390,7 +420,7 @@
 	            version = data.v,
 	            content = data.c;
 
-	        if (version === module.version) {
+	        if (module.version && version === module.version) {
 	            // 版本相同直接取本地存储
 	            module.content = content;
 	            callback(module);
@@ -403,7 +433,7 @@
 	                module.content = text;
 	                // 异步更新内容
 	                setTimeout(function () {
-	                    store.setItem({
+	                    store.setItem(module.name, {
 	                        u: module.path,
 	                        v: module.version,
 	                        c: module.content
@@ -449,8 +479,8 @@
 	                        tree(module.rely[i]);
 	                    }
 	                }
+	                modules.push(module.name);
 	            }
-	            modules.push(name);
 	        };
 
 	        tree(this.main);
@@ -462,15 +492,170 @@
 	            return;
 	        }
 
+	        var hook = function hook() {
+	            index--;
+	            if (index === 0) {
+	                callback();
+	            }
+	        };
+
 	        modules.forEach(function (module) {
-	            _this._runLoaded(module, function () {
-	                index--;
-	                if (index === 0) {
-	                    callback();
-	                }
-	            });
+	            _this._runLoaded(module, hook);
 	        });
-	        return;
+	    };
+
+	    /**
+	     * 执行模块
+	     * @param {Object} module
+	     * @param {Function} callback
+	     */
+
+
+	    Loader.prototype._runModule = function _runModule(module, callback) {
+	        var path = module.path,
+	            content = module.content;
+
+	        var pureUrl = path.split('?')[0];
+	        var type = module.type || pureUrl.toLowerCase().substring(pureUrl.lastIndexOf('.') + 1);
+	        if (type === 'js') {
+	            if (content && this.scriptRun(content)) {
+	                callback();
+	            } else {
+	                var script = this.scriptInject(path);
+	                script.onload = script.onreadystatechange = function () {
+	                    callback();
+	                };
+	            }
+	        } else if (type === 'css') {
+	            var isContent = Boolean(content);
+	            var style = this.styleInject(isContent ? content : path, isContent);
+	            style.onload = style.onreadystatechange = function () {
+	                callback();
+	            };
+	        } else {
+	            if (console && console.warn) {
+	                console.warn('Inc Error :: Module type not js or css: ' + module.name);
+	            }
+	            callback();
+	        }
+	    };
+
+	    /**
+	     * 递归执行
+	     * @param {Array} names
+	     * @param {Function} callback
+	     */
+
+
+	    Loader.prototype.__recursionExecute = function __recursionExecute(names, callback) {
+	        var _this2 = this;
+
+	        var index = names.length; // 执行索引
+	        if (index === 0) {
+	            // 直接 callback
+	            callback();
+	            return;
+	        }
+
+	        var hook = function hook() {
+	            index--;
+	            if (index === 0) {
+	                callback();
+	            }
+	        };
+
+	        names.forEach(function (name) {
+	            var module = _this2.queue[name];
+	            if (typeof module === 'undefined') {
+	                if (console && console.warn) {
+	                    console.warn('Inc Error :: Module not found: ' + name);
+	                }
+	                hook();
+	            } else if (module.rely && module.rely.length > 0) {
+	                _this2.__recursionExecute(module.rely, function () {
+	                    _this2._runModule(module, function () {
+	                        hook();
+	                    });
+	                });
+	            } else {
+	                _this2._runModule(module, function () {
+	                    hook();
+	                });
+	            }
+	        });
+	    };
+
+	    /**
+	     * 注入 style
+	     * @param {String} src
+	     * @param {Boolean} isContent 是否是样式内容
+	     * @return {Dom}
+	     */
+
+
+	    Loader.prototype.styleInject = function styleInject(src) {
+	        var isContent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+	        if (isContent) {
+	            var _style = document.createElement('style');
+	            _style.type = 'text/css';
+	            _style.innerHTML = src;
+	            this.head.appendChild(_style);
+	            return _style;
+	        }
+
+	        var style = document.createElement('link');
+	        style.type = 'text/css';
+	        style.rel = 'stylesheet';
+	        style.href = src;
+	        this.head.appendChild(style);
+	        return style;
+	    };
+
+	    /**
+	     * 注入 script
+	     * @param {String} src
+	     * @param {Boolean} isContent 是否是脚本内容
+	     * @return {Dom}
+	     */
+
+
+	    Loader.prototype.scriptInject = function scriptInject(src) {
+	        var isContent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+	        var script = document.createElement('script');
+	        script.type = 'text/javascript';
+	        script.async = 'true';
+	        if (isContent) {
+	            script.innerHTML = src;
+	        } else {
+	            script.src = src;
+	        }
+	        this.head.appendChild(script);
+	        return script;
+	    };
+
+	    /**
+	     * 注入 script
+	     * @param {String} content
+	     * @return {Boolean}
+	     */
+
+
+	    Loader.prototype.scriptRun = function scriptRun(content) {
+	        if (!content || !/\S/.test(content)) {
+	            return false;
+	        }
+
+	        try {
+	            window.eval.call(window, content);
+	            return true;
+	        } catch (e) {
+	            if (console && console.warn) {
+	                console.warn(e);
+	            }
+	            return false;
+	        }
 	    };
 
 	    /**
@@ -480,11 +665,10 @@
 
 
 	    Loader.prototype.execute = function execute(callback) {
-	        var _this2 = this;
+	        var _this3 = this;
 
 	        this._runQueue(function () {
-	            console.log(_this2.queue);
-	            callback();
+	            _this3.__recursionExecute([_this3.main], callback);
 	        });
 	    };
 

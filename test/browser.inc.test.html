@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.min.js"></script>
     <script>mocha.setup('bdd');</script>
-    <script>var abc = function () { console.log('abc') }</script>
+    <!--<script>var abc = function () { console.log('abc') };</script>
     <script inc-name="mod1" inc-path="./modules/mod1.js"></script>
     <script inc-name="mod2" inc-path="./modules/mod2.js"></script>
     <script inc-name="mod3" inc-path="./modules/mod3.js" inc-rely="mod1,mod2"></script>
@@ -26,7 +26,15 @@
             "storeMaxSize": 3145728, 
             "prefixServerUrl": "https://f32.r.fe.dev.sankuai.com/",
             "prefixDiffFileUrl": "http://awp-assets.sankuai.com/inc/"
+        }'></script>-->
+    <script src="../dist/inc.js" 
+        config='{
+            "bizname": "test", 
+            "storeMaxSize": 3145728, 
+            "prefixServerUrl": "https://f32.r.fe.dev.sankuai.com/",
+            "prefixDiffFileUrl": "http://awp-assets.sankuai.com/inc/"
         }'></script>
+    <script src="./browser.inc.test.js"></script>
     <script>
         // mocha.checkLeaks();
         mocha.globals(['jQuery']);
