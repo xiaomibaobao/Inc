@@ -103,18 +103,7 @@
 
 
 	    Inc.prototype._init = function _init(config) {
-	        var cfg = {};
-	        if (config) {
-	            try {
-	                cfg = JSON.parse(config);
-	            } catch (e) {
-	                if (console && console.error) {
-	                    console.error('In Error :: attribute config not json');
-	                }
-	            }
-	        }
-
-	        this.config = new _config2.default(cfg);
+	        this.config = new _config2.default(window[config] || {});
 	        this.hook = new _hook2.default();
 	    };
 
@@ -284,7 +273,7 @@
 	            this.tasks.forEach(function (task) {
 	                var statistic = _this.statistics[task[0]];
 	                if (statistic) {
-	                    reportCallback(statistic, task[0]);
+	                    reportCallback(statistic, task[1]);
 	                }
 	            });
 	        }
