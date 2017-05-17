@@ -79,21 +79,13 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /*eslint no-eval: 0, no-useless-call: 0*/
 
 
-	var makeArray = function makeArray(names) {
-	    var arr = [];
-	    for (var i = 0; i < names.length; i++) {
-	        arr.push(names[i]);
-	    }
-	    return arr;
-	};
-
 	var Inc = function () {
 	    function Inc() {
 	        _classCallCheck(this, Inc);
 
 	        this.queue = {}; // 待执行模块
 
-	        var scripts = makeArray(document.getElementsByTagName('script'));
+	        var scripts = Array.from(document.getElementsByTagName('script'));
 	        var self = scripts.pop();
 	        var config = self.getAttribute('config');
 	        var autoload = self.getAttribute('autoload');
@@ -224,7 +216,7 @@
 	            if (index === 0) {
 	                callback();
 	                setTimeout(function () {
-	                    _this.hook.doStatistics();
+	                    _this.hook.doStatistics(_this.config.get('reportCallback'));
 	                }, 0);
 	            }
 	        };
@@ -252,7 +244,7 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Hook = function () {
-	    function Hook(prefix, maxSize) {
+	    function Hook() {
 	        _classCallCheck(this, Hook);
 
 	        this.statistics = { // 统计项目
@@ -285,14 +277,14 @@
 	     */
 
 
-	    Hook.prototype.doStatistics = function doStatistics() {
+	    Hook.prototype.doStatistics = function doStatistics(reportCallback) {
 	        var _this = this;
 
-	        if (window.mta) {
+	        if (reportCallback) {
 	            this.tasks.forEach(function (task) {
-	                var st = _this.statistics[task[0]];
-	                if (st) {
-	                    window.mta(st.type, st.name, task[0]);
+	                var statistic = _this.statistics[task[0]];
+	                if (statistic) {
+	                    reportCallback(statistic, task[0]);
 	                }
 	            });
 	        }
@@ -316,10 +308,17 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var defaultConfig = {
+	    'activated': true, // 是否开启前端离线化
 	    'bizname': '', // 储存前缀
 	    'storeMaxSize': 0, // 存储最大大小，0 为不限制
 	    'prefixServerUrl': '', // diff 服务地址
-	    'prefixDiffFileUrl': '' // diff 文件地址前缀
+	    'prefixDiffFileUrl': '', // diff 文件地址前缀
+	    'reportCallback': function reportCallback(statistic, value) {
+	        // 上报 Callback
+	        if (window.mta) {
+	            window.mta(statistic.type, statistic.name, value);
+	        }
+	    }
 	};
 
 	var Config = function () {
@@ -385,7 +384,7 @@
 	        this.hook = hook;
 
 	        this.head = document.head || document.getElementsByTagName('head')[0]; // head el
-	        this.activated = true; // 是否开启前端离线化
+	        this.activated = config.get('activated'); // 是否开启前端离线化
 
 	        this.queue = queue; // 队列
 	        this.main = main; // 执行主函数
@@ -599,7 +598,7 @@
 	        if (isContent) {
 	            var _style = document.createElement('style');
 	            _style.type = 'text/css';
-	            _style.innerHTML = src;
+	            _style.textContent = src;
 	            this.head.appendChild(_style);
 	            return _style;
 	        }
@@ -627,7 +626,7 @@
 	        script.type = 'text/javascript';
 	        script.async = 'true';
 	        if (isContent) {
-	            script.innerHTML = src;
+	            script.textContent = src;
 	        } else {
 	            script.src = src;
 	        }
@@ -648,7 +647,9 @@
 	        }
 
 	        try {
+	            var begin = new Date().getTime();
 	            window.eval.call(window, content);
+	            this.hook.push('loaderScriptEvalTime', new Date().getTime() - begin);
 	            return true;
 	        } catch (e) {
 	            if (console && console.warn) {

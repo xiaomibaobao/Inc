@@ -1,8 +1,8 @@
 {
   "name": "inc",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
-  "main": "inc.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "node /usr/local/lib/node_modules/istanbul/lib/cli.js cover _mocha ./test/**/v8.*.test.js",
     "build": "webpack --config webpack.config.js"
